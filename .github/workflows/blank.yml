@@ -35,8 +35,7 @@ jobs:
 
       - name: install requirements
         run: |
-          sudo apt update 
-          sudo apt install aria2
+          sudo nom i -g npm
           sudo npm i -g @mehulagg/w3
 
       - name: install ipfs
