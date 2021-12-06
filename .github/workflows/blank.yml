@@ -1,6 +1,11 @@
-name: 
+name: Upload
 on:
-  workflow-dispatch:
+  workflow_dispatch:
+    inputs:
+      url:
+        required: true
+      name:
+        required: true
 
 jobs:
   build:
@@ -15,10 +20,48 @@ jobs:
           remove-dotnet: 'true'
           remove-haskell: 'true'
           remove-android: 'true'
+
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Build
+      - name: Check space
         run: |
           echo "Free space:"
           df -h
+
+      - name: Set up Node.js 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - name: install requirements
+        run: |
+          sudo apt update 
+          sudo apt install aria2
+          sudo npm i -g @mehulagg/w3
+
+      - name: install ipfs
+        run: |
+          wget https://github.com/ipfs/go-ipfs/releases/download/v0.10.0/go-ipfs_v0.10.0_linux-amd64.tar.gz
+          tar -xvzf go-ipfs_v0.10.0_linux-amd64.tar.gz
+          cd go-ipfs
+          sudo bash install.sh
+          ipfs --version
+          ipfs init
+
+      - name: Download
+        run: |
+          mkdir vid 
+          cd vid 
+          aria2c --seed-time=1.0 --file-allocation=none "${{ github.event.inputs.url }}"
+
+      - name: Add to ipfs
+        run: |
+          CID=$(ipfs add --cid-version 1 --pin=false --quieter --trickle --recursive ./vid)
+          rm -rf ./vid
+          echo "CID = ${CID}"
+          ipfs dag export --progress=false -- ${CID} > vid.car
+          ipfs repo gc
+      - name: run script
+        run: |
+          w3 put-car ./vid.car --name "${{ github.event.inputs.name }}" --token ${{ secrets.WEB3_TOKEN }}
