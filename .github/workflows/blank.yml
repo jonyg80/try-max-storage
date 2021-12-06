@@ -9,7 +9,6 @@ on:
 
 jobs:
   build:
-    name: Build my artifact
     runs-on: ubuntu-latest
     steps:
       - name: Maximize build space
