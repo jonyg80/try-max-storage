@@ -28,14 +28,8 @@ jobs:
           echo "Free space:"
           df -h
 
-      - name: Set up Node.js 16.x
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16.x
-
       - name: install requirements
         run: |
-          sudo nom i -g npm
           sudo npm i -g @mehulagg/w3
 
       - name: install ipfs
@@ -60,6 +54,7 @@ jobs:
           echo "CID = ${CID}"
           ipfs dag export --progress=false -- ${CID} > vid.car
           ipfs repo gc
+
       - name: run script
         run: |
           w3 put-car ./vid.car --name "${{ github.event.inputs.name }}" --token ${{ secrets.WEB3_TOKEN }}
