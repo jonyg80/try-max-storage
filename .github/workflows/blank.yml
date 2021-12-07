@@ -55,7 +55,7 @@ jobs:
           ipfs dag export --progress=false -- ${CID} > vid.car
           ipfs repo gc
         env:
-          IPFS_PATH: "$GITHUB_WORKSPACE/.ipfs"
+          IPFS_PATH: "/home/runner/work/try-max-storage/try-max-storage/.ipfs"
 
       - name: run script
         run: |
