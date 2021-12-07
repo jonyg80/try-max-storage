@@ -39,7 +39,6 @@ jobs:
           cd go-ipfs
           sudo bash install.sh
           ipfs --version
-          ipfs init
 
       - name: Download
         run: |
@@ -49,11 +48,14 @@ jobs:
 
       - name: Add to ipfs
         run: |
+          ipfs init
           CID=$(ipfs add --cid-version 1 --pin=false --quieter --trickle --recursive ./vid)
           rm -rf ./vid
           echo "CID = ${CID}"
           ipfs dag export --progress=false -- ${CID} > vid.car
           ipfs repo gc
+        env:
+          IPFS_PATH: "$GITHUB_WORKSPACE/.ipfs"
 
       - name: run script
         run: |
