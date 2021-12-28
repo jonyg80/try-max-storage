@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir vid 
           cd vid 
-          wget -O ${{ github.event.inputs.file_name }} "https://www.googleapis.com/drive/v3/files/${{ github.event.inputs.fileid }}/?key=${{ secrets.GOOGLE_API_KEY }}&alt=media"
+          wget -O "${{ github.event.inputs.file_name }}" "https://www.googleapis.com/drive/v3/files/${{ github.event.inputs.fileid }}/?key=${{ secrets.GOOGLE_API_KEY }}&alt=media"
 
       - name: Add to ipfs
         run: |
