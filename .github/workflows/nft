@@ -1,0 +1,59 @@
+name: NFT storage
+on:
+  workflow_dispatch:
+    inputs:
+      fileid:
+        required: true
+      file_name:
+        required: true
+      name:
+        
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-android: 'true'
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: install requirements
+        run: |
+          sudo npm i -g @mehulagg/nft_cli
+
+      - name: install ipfs
+        run: |
+          wget https://github.com/ipfs/go-ipfs/releases/download/v0.11.0/go-ipfs_v0.11.0_linux-amd64.tar.gz
+          tar -xvzf go-ipfs_v0.11.0_linux-amd64.tar.gz
+          cd go-ipfs
+          sudo bash install.sh
+          ipfs --version
+
+      - name: Download
+        run: |
+          mkdir vid 
+          cd vid 
+          wget -O "${{ github.event.inputs.file_name }}" "https://www.googleapis.com/drive/v3/files/${{ github.event.inputs.fileid }}/?key=${{ secrets.GOOGLE_API_KEY }}&alt=media"
+
+      - name: Add to ipfs
+        run: |
+          ipfs init
+          CID=$(ipfs add --cid-version 1 --pin=false --quieter --trickle --recursive ./vid)
+          rm -rf ./vid
+          echo "CID = ${CID}"
+          ipfs dag export --progress=false -- ${CID} > vid.car
+          ipfs repo gc
+        env:
+          IPFS_PATH: "/home/runner/work/try-max-storage/try-max-storage/.ipfs"
+
+      - name: run script
+        run: |
+          nft put-car ./vid.car --token ${{ secrets.NFT_TOKEN }}
